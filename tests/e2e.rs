@@ -123,6 +123,15 @@ fn list_works_offline_from_snapshot() {
     assert!(stdout.contains("https://api.siliconflow.cn/v1"));
     assert!(stdout.contains("https://api.deepseek.com/v1"));
 
+    // 坐实离线:list 在 cache-miss 时只回退快照,绝不 live-fetch(reqwest 仅 modelsdev::fetch 用,
+    // 而 fetch 只被 refresh 调,refresh 只被 `qiao refresh` 调)。若 list 触网拉取会写缓存——
+    // 断言隔离 cache 目录里没有 modelsdev.json,以防此假设被未来改动悄悄打破。
+    let cache_file = home.join("qiao").join("modelsdev.json");
+    assert!(
+        !cache_file.exists(),
+        "list 不应拉取/写入 models.dev 缓存(cache-miss 应只读内置快照)"
+    );
+
     fs::remove_dir_all(&home).ok();
 }
 
