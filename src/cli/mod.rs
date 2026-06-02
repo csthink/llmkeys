@@ -30,7 +30,7 @@ pub(crate) fn load_catalog() -> Result<ProvidersFile> {
 pub(crate) fn find_provider<'a>(cat: &'a ProvidersFile, id: &str) -> Result<&'a Provider> {
     cat.providers
         .get(id)
-        .ok_or_else(|| anyhow!("未找到 provider `{id}`;运行 `qiao list` 查看可用项"))
+        .ok_or_else(|| anyhow!("未找到 provider `{id}`;运行 `llmkeys list` 查看可用项"))
 }
 
 /// 由 provider 的 key_ref 解析 CredRef;`--profile` 若给定则覆盖其 profile。
@@ -100,14 +100,14 @@ pub(crate) fn data_source_line() -> String {
     use crate::catalog::modelsdev::{status, CacheStatus};
     match status() {
         CacheStatus::Missing => {
-            "数据来源:内置快照 + 用户 overrides(models.dev 无缓存,`qiao refresh` 可拉取)".to_string()
+            "数据来源:内置快照 + 用户 overrides(models.dev 无缓存,`llmkeys refresh` 可拉取)".to_string()
         }
         CacheStatus::Fresh { age_secs } => format!(
             "数据来源:内置快照 + models.dev 缓存({}前)+ 用户 overrides",
             humanize(age_secs)
         ),
         CacheStatus::Stale { age_secs } => format!(
-            "数据来源:内置快照 + models.dev 缓存({}前,已过期,建议 `qiao refresh`)+ 用户 overrides",
+            "数据来源:内置快照 + models.dev 缓存({}前,已过期,建议 `llmkeys refresh`)+ 用户 overrides",
             humanize(age_secs)
         ),
     }

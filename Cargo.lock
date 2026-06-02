@@ -758,6 +758,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92daf443525c4cce67b150400bc2316076100ce0b3686209eb8cf3c31612e6f0"
 
 [[package]]
+name = "llmkeys"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arboard",
+ "clap",
+ "directories",
+ "keyring",
+ "reqwest",
+ "rpassword",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "toml",
+ "zeroize",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -995,24 +1013,6 @@ name = "pxfm"
 version = "0.1.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0c5ccf5294c6ccd63a74f1565028353830a9c2f5eb0c682c355c471726a6e3f"
-
-[[package]]
-name = "qiao"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "arboard",
- "clap",
- "directories",
- "keyring",
- "reqwest",
- "rpassword",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "toml",
- "zeroize",
-]
 
 [[package]]
 name = "quick-error"

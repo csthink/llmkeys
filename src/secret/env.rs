@@ -24,7 +24,7 @@ impl SecretStore for EnvStore {
     fn set(&self, _r: &CredRef, _value: Secret) -> Result<()> {
         // 安全红线:不把 key 写进持久化 env。进程内 set_var 也无意义(子进程才可见且易泄露)。
         Err(anyhow!(
-            "env 后端是只读兜底,不支持写入;请改用 keychain(`qiao key set <id>`)或自行 `export`"
+            "env 后端是只读兜底,不支持写入;请改用 keychain(`llmkeys key set <id>`)或自行 `export`"
         ))
     }
 
@@ -50,7 +50,7 @@ mod tests {
     #[test]
     fn get_and_exists_read_env_var() {
         // 用一个测试专属变量名,避免与真实 key 变量冲突。
-        let name = "QIAO_TEST_ENV_BACKEND_VAR";
+        let name = "LLMKEYS_TEST_ENV_BACKEND_VAR";
         // SAFETY: 测试内单线程设置/清理自有的测试变量。
         unsafe { std::env::set_var(name, "dummy-not-a-real-key") };
 

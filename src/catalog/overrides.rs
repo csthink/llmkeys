@@ -1,4 +1,4 @@
-//! 三层合并的最高层:用户 overrides(`~/.config/qiao/providers.toml`,spec S3)。
+//! 三层合并的最高层:用户 overrides(`~/.config/llmkeys/providers.toml`,spec S3)。
 //!
 //! **用户写的永远赢**。文件不存在不是错误(返回空层);存在但解析失败才报错。
 
@@ -30,7 +30,7 @@ mod tests {
     use super::*;
 
     fn tmp(name: &str) -> std::path::PathBuf {
-        std::env::temp_dir().join(format!("qiao-test-overrides-{name}.toml"))
+        std::env::temp_dir().join(format!("llmkeys-test-overrides-{name}.toml"))
     }
 
     #[test]

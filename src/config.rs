@@ -1,7 +1,7 @@
 //! 配置与缓存路径解析(design D4)。
 //!
-//! - overrides(用户覆盖层):`~/.config/qiao/providers.toml`
-//! - models.dev 缓存:`~/.cache/qiao/modelsdev.json`(拉取时间戳 + TTL 由 T3 处理)
+//! - overrides(用户覆盖层):`~/.config/llmkeys/providers.toml`
+//! - models.dev 缓存:`~/.cache/llmkeys/modelsdev.json`(拉取时间戳 + TTL 由 T3 处理)
 //!
 //! D4 同时写了字面量 `~/.config` / `~/.cache` **和**"用 directories crate"。但 `directories`
 //! 的 `ProjectDirs` 在 macOS 返回 `~/Library/Application Support` / `~/Library/Caches`,与字面量
@@ -15,7 +15,7 @@ use std::path::PathBuf;
 use anyhow::{Context, Result};
 
 /// 应用目录名(config / cache 下的子目录)。
-const APP_DIR: &str = "qiao";
+const APP_DIR: &str = "llmkeys";
 
 /// 用户主目录,经 `directories::BaseDirs` 解析。
 fn home_dir() -> Result<PathBuf> {
@@ -39,13 +39,13 @@ fn resolve_app_dir(
     }
 }
 
-/// 配置目录:`$XDG_CONFIG_HOME/qiao` 或 `~/.config/qiao`。
+/// 配置目录:`$XDG_CONFIG_HOME/llmkeys` 或 `~/.config/llmkeys`。
 pub fn config_dir() -> Result<PathBuf> {
     let xdg = std::env::var_os("XDG_CONFIG_HOME");
     resolve_app_dir(xdg.as_deref(), ".config", home_dir)
 }
 
-/// 缓存目录:`$XDG_CACHE_HOME/qiao` 或 `~/.cache/qiao`。
+/// 缓存目录:`$XDG_CACHE_HOME/llmkeys` 或 `~/.cache/llmkeys`。
 pub fn cache_dir() -> Result<PathBuf> {
     let xdg = std::env::var_os("XDG_CACHE_HOME");
     resolve_app_dir(xdg.as_deref(), ".cache", home_dir)
@@ -73,7 +73,7 @@ mod tests {
     #[test]
     fn xdg_value_wins_when_set() {
         let dir = resolve_app_dir(Some(OsStr::new("/custom/cfg")), ".config", alice).unwrap();
-        assert_eq!(dir, PathBuf::from("/custom/cfg/qiao"));
+        assert_eq!(dir, PathBuf::from("/custom/cfg/llmkeys"));
     }
 
     #[test]
@@ -83,18 +83,18 @@ mod tests {
             panic!("XDG 已设时不应解析 home")
         })
         .unwrap();
-        assert_eq!(dir, PathBuf::from("/custom/qiao"));
+        assert_eq!(dir, PathBuf::from("/custom/llmkeys"));
     }
 
     #[test]
     fn falls_back_to_home_subdir_when_xdg_absent() {
         assert_eq!(
             resolve_app_dir(None, ".config", alice).unwrap(),
-            PathBuf::from("/Users/alice/.config/qiao")
+            PathBuf::from("/Users/alice/.config/llmkeys")
         );
         assert_eq!(
             resolve_app_dir(None, ".cache", alice).unwrap(),
-            PathBuf::from("/Users/alice/.cache/qiao")
+            PathBuf::from("/Users/alice/.cache/llmkeys")
         );
     }
 
@@ -103,7 +103,7 @@ mod tests {
         // 空字符串视为未设置,回落到 ~/.<sub>。
         assert_eq!(
             resolve_app_dir(Some(OsStr::new("")), ".config", alice).unwrap(),
-            PathBuf::from("/Users/alice/.config/qiao")
+            PathBuf::from("/Users/alice/.config/llmkeys")
         );
     }
 
@@ -112,7 +112,7 @@ mod tests {
         // 验证最终文件名拼接(不依赖真实 home)。
         let cfg = resolve_app_dir(None, ".config", alice).unwrap().join("providers.toml");
         let cache = resolve_app_dir(None, ".cache", alice).unwrap().join("modelsdev.json");
-        assert!(cfg.ends_with("qiao/providers.toml"));
-        assert!(cache.ends_with("qiao/modelsdev.json"));
+        assert!(cfg.ends_with("llmkeys/providers.toml"));
+        assert!(cache.ends_with("llmkeys/modelsdev.json"));
     }
 }

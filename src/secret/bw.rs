@@ -129,7 +129,7 @@ impl SecretStore for BwStore {
     fn set(&self, _r: &CredRef, _value: Secret) -> Result<()> {
         // v1 不在 bw 后端写入(design D3):避免把 key 经 argv/临时文件喂给 bw create。
         Err(anyhow!(
-            "v1 不支持通过 qiao 写入 Bitwarden;请在 Bitwarden 客户端手动创建该条目后,用 `bw:item/<名>` 引用"
+            "v1 不支持通过 llmkeys 写入 Bitwarden;请在 Bitwarden 客户端手动创建该条目后,用 `bw:item/<名>` 引用"
         ))
     }
 

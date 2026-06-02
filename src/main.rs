@@ -1,4 +1,4 @@
-//! qiao CLI 入口。
+//! llmkeys CLI 入口。
 //!
 //! clap derive 注册全部子命令(对应 spec S4),T6 把命令体接到 `cli` 模块的数据流(design D3)。
 //! `--help` / `--version` 由 clap 在分发前处理。错误统一在 `main` 以人类可读形式打印(无 panic backtrace)。
@@ -15,9 +15,9 @@ mod model;
 mod render;
 mod secret;
 
-/// qiao —— 本地 LLM provider 与密钥管家。
+/// llmkeys —— 本地 LLM provider 与密钥管家。
 #[derive(Parser)]
-#[command(name = "qiao", version, about, long_about = None)]
+#[command(name = "llmkeys", version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Command,

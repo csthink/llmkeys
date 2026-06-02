@@ -1,4 +1,4 @@
-//! `qiao key set/check <id[#profile]>`:管理 **keychain** 中的密钥(spec S4)。
+//! `llmkeys key set/check <id[#profile]>`:管理 **keychain** 中的密钥(spec S4)。
 //!
 //! 二者都作用于 keychain(与子命令语义一致)。`set` 经隐藏输入读 key(不进 argv/history);
 //! `check` 只回 yes/no,不打印明文。

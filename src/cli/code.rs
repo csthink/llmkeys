@@ -1,4 +1,4 @@
-//! `qiao code <id> [--profile p] [--copy]`:输出 LangChain 代码片段(spec S4/S5)。
+//! `llmkeys code <id> [--profile p] [--copy]`:输出 LangChain 代码片段(spec S4/S5)。
 
 use anyhow::Result;
 

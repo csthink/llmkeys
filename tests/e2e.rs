@@ -11,11 +11,11 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 /// cargo 为集成测试注入的二进制路径。
-const BIN: &str = env!("CARGO_BIN_EXE_qiao");
+const BIN: &str = env!("CARGO_BIN_EXE_llmkeys");
 
 /// 建一个干净的临时目录,同时充当 XDG_CONFIG_HOME 与 XDG_CACHE_HOME。
 fn temp_home(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("qiao-e2e-{name}"));
+    let dir = std::env::temp_dir().join(format!("llmkeys-e2e-{name}"));
     let _ = fs::remove_dir_all(&dir);
     fs::create_dir_all(&dir).unwrap();
     dir
@@ -23,27 +23,27 @@ fn temp_home(name: &str) -> PathBuf {
 
 /// 在临时配置目录写一份 overrides,把 openrouter 的 key_ref 指到 env 后端。
 ///
-/// config.rs 在 `XDG_CONFIG_HOME` 后追加 `qiao` 子目录,故文件落在 `<home>/qiao/providers.toml`。
+/// config.rs 在 `XDG_CONFIG_HOME` 后追加 `llmkeys` 子目录,故文件落在 `<home>/llmkeys/providers.toml`。
 fn write_env_override(home: &Path) {
-    let cfg_dir = home.join("qiao");
+    let cfg_dir = home.join("llmkeys");
     fs::create_dir_all(&cfg_dir).unwrap();
     fs::write(
         cfg_dir.join("providers.toml"),
-        "[providers.openrouter]\nkey_ref = \"env:QIAO_E2E_KEY\"\n",
+        "[providers.openrouter]\nkey_ref = \"env:LLMKEYS_E2E_KEY\"\n",
     )
     .unwrap();
 }
 
-/// 跑一条 qiao 命令,隔离到临时 home,并注入占位 key 变量。
+/// 跑一条 llmkeys 命令,隔离到临时 home,并注入占位 key 变量。
 fn run(home: &Path, args: &[&str], key: Option<&str>) -> Output {
     let mut cmd = Command::new(BIN);
     cmd.args(args)
         .env("XDG_CONFIG_HOME", home)
         .env("XDG_CACHE_HOME", home);
     if let Some(k) = key {
-        cmd.env("QIAO_E2E_KEY", k);
+        cmd.env("LLMKEYS_E2E_KEY", k);
     }
-    cmd.output().expect("运行 qiao 失败")
+    cmd.output().expect("运行 llmkeys 失败")
 }
 
 #[test]
@@ -124,9 +124,9 @@ fn list_works_offline_from_snapshot() {
     assert!(stdout.contains("https://api.deepseek.com/v1"));
 
     // 坐实离线:list 在 cache-miss 时只回退快照,绝不 live-fetch(reqwest 仅 modelsdev::fetch 用,
-    // 而 fetch 只被 refresh 调,refresh 只被 `qiao refresh` 调)。若 list 触网拉取会写缓存——
+    // 而 fetch 只被 refresh 调,refresh 只被 `llmkeys refresh` 调)。若 list 触网拉取会写缓存——
     // 断言隔离 cache 目录里没有 modelsdev.json,以防此假设被未来改动悄悄打破。
-    let cache_file = home.join("qiao").join("modelsdev.json");
+    let cache_file = home.join("llmkeys").join("modelsdev.json");
     assert!(
         !cache_file.exists(),
         "list 不应拉取/写入 models.dev 缓存(cache-miss 应只读内置快照)"
@@ -144,7 +144,7 @@ fn show_displays_key_ref_not_plaintext() {
     let out = run(&home, &["show", "openrouter"], Some("SUPER-SECRET-PLACEHOLDER"));
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(out.status.success());
-    assert!(stdout.contains("env:QIAO_E2E_KEY"), "应显示 key_ref 引用");
+    assert!(stdout.contains("env:LLMKEYS_E2E_KEY"), "应显示 key_ref 引用");
     assert!(
         !stdout.contains("SUPER-SECRET-PLACEHOLDER"),
         "show 绝不能打印明文 key"
@@ -173,11 +173,11 @@ fn env_missing_key_gives_actionable_error() {
     let home = temp_home("missing-key");
     write_env_override(&home);
 
-    // 不注入 QIAO_E2E_KEY。
+    // 不注入 LLMKEYS_E2E_KEY。
     let out = run(&home, &["env", "openrouter"], None);
     assert!(!out.status.success());
     let stderr = String::from_utf8_lossy(&out.stderr);
-    assert!(stderr.contains("QIAO_E2E_KEY"));
+    assert!(stderr.contains("LLMKEYS_E2E_KEY"));
     assert!(stderr.contains("export"));
 
     fs::remove_dir_all(&home).ok();

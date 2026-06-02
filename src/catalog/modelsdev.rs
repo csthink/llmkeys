@@ -1,6 +1,6 @@
 //! 三层合并的中间层:models.dev 拉取 + 缓存 + TTL + 失败降级(spec S6, design D4)。
 //!
-//! 缓存文件:`~/.cache/qiao/modelsdev.json`,内容 `{ fetched_at, providers }`。
+//! 缓存文件:`~/.cache/llmkeys/modelsdev.json`,内容 `{ fetched_at, providers }`。
 //!
 //! **降级(S6)**:拉取失败 → 保留旧缓存(`refresh` 在成功拉取前绝不动缓存);缓存缺失/损坏 →
 //! 空层(合并时退回快照,`list` 仍可用)。任何路径都**不**把 key 写进日志(本层不接触 key)。
@@ -50,7 +50,7 @@ pub enum CacheStatus {
     Missing,
     /// 有缓存且在 TTL 内。
     Fresh { age_secs: u64 },
-    /// 有缓存但已过期(仍可用,建议 `qiao refresh`)。
+    /// 有缓存但已过期(仍可用,建议 `llmkeys refresh`)。
     Stale { age_secs: u64 },
 }
 
@@ -174,7 +174,7 @@ mod tests {
     use anyhow::anyhow;
 
     fn tmp(name: &str) -> std::path::PathBuf {
-        std::env::temp_dir().join(format!("qiao-test-modelsdev-{name}.json"))
+        std::env::temp_dir().join(format!("llmkeys-test-modelsdev-{name}.json"))
     }
 
     #[test]

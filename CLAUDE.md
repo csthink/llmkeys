@@ -1,4 +1,4 @@
-# CLAUDE.md — qiao 项目宪法
+# CLAUDE.md — llmkeys 项目宪法
 
 > Claude Code 每个会话都会读取本文件。这里只放**每次都必须遵守的常驻约束**,细节见 `docs/`。
 > 设计文档是唯一事实来源(source of truth):**代码服从文档,不服从记忆、不服从直觉。**
@@ -32,9 +32,9 @@
 ## 核心约定(实现时反复用到)
 
 - **凭证引用 URI**:`<backend>:<locator>[#profile]`,配置里**只存引用,绝不存 key**。详见 `docs/spec.md` S1。
-- **keychain 布局**:`service = "dev.mars.qiao"`,`account = "<provider>[#profile]"`,一条目一 key。
+- **keychain 布局**:`service = "dev.mars.llmkeys"`,`account = "<provider>[#profile]"`,一条目一 key。
 - **目录三层合并**(低→高):内置快照 `snapshot/providers.snapshot.toml` < models.dev 缓存 < 用户 overrides
-  `~/.config/qiao/providers.toml`。**字段级合并,用户写的永远赢。** 详见 `docs/spec.md` S3。
+  `~/.config/llmkeys/providers.toml`。**字段级合并,用户写的永远赢。** 详见 `docs/spec.md` S3。
 - **国内 provider**(SiliconFlow / 阿里云百炼):models.dev 覆盖不全,以快照/overrides 为准,**不要**等上游。
 
 ## 工作纪律

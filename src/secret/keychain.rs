@@ -1,6 +1,6 @@
 //! keychain 后端:macOS 登录钥匙串(spec S2,design D3)。
 //!
-//! 条目 = `(service = "dev.mars.qiao", account = "<provider>[#profile]")`,一条目一 key。
+//! 条目 = `(service = "dev.mars.llmkeys", account = "<provider>[#profile]")`,一条目一 key。
 
 use anyhow::{Context, Result};
 use zeroize::Zeroizing;
@@ -9,7 +9,7 @@ use super::{Secret, SecretStore};
 use crate::cred_ref::CredRef;
 
 /// keychain service 标识(spec S2,固定)。
-const SERVICE: &str = "dev.mars.qiao";
+const SERVICE: &str = "dev.mars.llmkeys";
 
 pub struct KeychainStore;
 
@@ -33,7 +33,7 @@ impl SecretStore for KeychainStore {
         match entry(r)?.get_password() {
             Ok(pw) => Ok(Zeroizing::new(pw)),
             Err(keyring::Error::NoEntry) => Err(anyhow::anyhow!(
-                "keychain 中没有 {account} 的 key;请先运行 `qiao key set {account}`"
+                "keychain 中没有 {account} 的 key;请先运行 `llmkeys key set {account}`"
             )),
             // 注意:keyring 错误不含明文 key,可安全透出。
             Err(e) => Err(e).with_context(|| format!("读取 keychain 失败(account={account})")),
@@ -82,11 +82,11 @@ mod tests {
 
     /// 本机往返手测(DoD):默认 `#[ignore]`,以免普通 `cargo test` 触发钥匙串授权弹窗。
     /// 运行:`cargo test --lib -- --ignored keychain_roundtrip`(会在真实登录钥匙串
-    /// 写入/读取/删除一个 `dev.mars.qiao` / `qiao-selftest` 测试条目,用后即删)。
+    /// 写入/读取/删除一个 `dev.mars.llmkeys` / `llmkeys-selftest` 测试条目,用后即删)。
     #[test]
     #[ignore]
     fn keychain_roundtrip() {
-        let r = cred("qiao-selftest", None);
+        let r = cred("llmkeys-selftest", None);
         let store = KeychainStore;
 
         store.set(&r, Zeroizing::new("test-secret-value".to_string())).unwrap();

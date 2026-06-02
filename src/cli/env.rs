@@ -1,4 +1,4 @@
-//! `qiao env <id> [--profile p] [--copy]`:输出 `.env` 片段(spec S4/S5)。
+//! `llmkeys env <id> [--profile p] [--copy]`:输出 `.env` 片段(spec S4/S5)。
 
 use anyhow::Result;
 

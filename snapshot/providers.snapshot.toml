@@ -1,6 +1,6 @@
-# qiao 内置 provider 快照(兜底层)
+# llmkeys 内置 provider 快照(兜底层)
 # ---------------------------------------------------------------------------
-# 合并优先级(低 → 高):本快照 < models.dev 拉取缓存 < 用户 overrides(~/.config/qiao/providers.toml)
+# 合并优先级(低 → 高):本快照 < models.dev 拉取缓存 < 用户 overrides(~/.config/llmkeys/providers.toml)
 # 用途:① 离线/首次运行时的兜底；② 补全 models.dev 对国内 provider 覆盖不足的字段。
 # 注意:此文件只存"非机密配置"。key_ref 仅是"去哪取 key"的引用,绝不含 key 明文。
 # schema 见 spec.md S3;模型角色 v1 识别 chat / embedding,未知角色保留不报错。

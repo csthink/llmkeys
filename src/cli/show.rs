@@ -1,4 +1,4 @@
-//! `qiao show <id>`:展示某 provider 完整配置。
+//! `llmkeys show <id>`:展示某 provider 完整配置。
 //!
 //! **安全**:key 一律显示为 `key_ref` 引用形式,**绝不**取出 / 显示明文(本命令不碰 secret 后端)。
 

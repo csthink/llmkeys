@@ -1,4 +1,4 @@
-//! `qiao list`:列出合并后的所有 provider(名 + base_url 摘要),并提示数据来源(S4/S6)。
+//! `llmkeys list`:列出合并后的所有 provider(名 + base_url 摘要),并提示数据来源(S4/S6)。
 
 use anyhow::Result;
 
