@@ -159,6 +159,17 @@ qiao code openrouter
 | `qiao code <id> [--profile p] [--copy]` | 输出 LangChain(`ChatOpenAI`)片段 |
 | `qiao refresh` | 重新拉取 models.dev 缓存(失败保留旧缓存) |
 
+> **删除 keychain 里的 key**:qiao 没有删除子命令,用系统自带的 `security`(条目固定
+> `service = "dev.mars.qiao"`,`account = "<provider>[#profile]"`):
+>
+> ```sh
+> security delete-generic-password -s "dev.mars.qiao" -a "openrouter"        # 默认 profile
+> security delete-generic-password -s "dev.mars.qiao" -a "openrouter#work"   # 指定 profile
+> ```
+>
+> 操作不可逆;删前确认 key 在别处(如 Bitwarden)有备份。想全部改走 bw,把各 provider 的
+> `key_ref` 改成 `bw:id/<id>`(见 [用 Bitwarden 取 key](#用-bitwarden--vaultwarden-取-key))后再删。
+
 ### 自定义 / 补全 provider(本地覆盖)
 
 配置三层合并(低 → 高):**内置快照 < models.dev 缓存 < 你的覆盖**,**字段级合并、你写的永远赢**。
@@ -198,6 +209,13 @@ bw config server https://your-vaultwarden.example.com   # 自托管 Vaultwarden(
 bw login
 export BW_SESSION="$(bw unlock --raw)"
 qiao env openrouter   # qiao 会调用 bw get 取 key
+```
+
+按你存的条目名(如 `DEEPSEEK_API_KEY`)搜出条目 **id**,写成 `bw:id/<id>` 比按名引用更稳(改名不受影响):
+
+```sh
+bw list items --search DEEPSEEK_API_KEY   # 从输出里取 "id" 字段
+# 然后:key_ref = "bw:id/<上面的 id>"
 ```
 
 > Bitwarden 一律走 **`bw`(Password Manager CLI)**,可连自托管 Vaultwarden;
