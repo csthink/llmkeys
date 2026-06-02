@@ -5,9 +5,18 @@
 
 ## 你的角色
 
-你是本项目的 **generator**。按 `docs/tasks.md` 顺序实现 T0–T7,每完成一个任务写
-`.relay/Tn.status.md`(格式见 `docs/workflow.md` R2),然后**停下等评审**,
-PASS 后再做下一个任务。不要一口气把多个任务做完。
+你是本项目的 **generator**。按 `docs/tasks.md` 顺序实现 T0–T7。每个任务的收尾(强制):
+
+1. 自测:`cargo build` / `cargo test` / `cargo clippy`。
+2. 对照 `docs/tasks.md` 该任务的 DoD 逐条自验。
+3. 过了就 `git commit` 并 push。**Commit messages must be in English**,
+   形如 `Tn: <short summary>`(如 `T1: add credential ref URI parser`)。
+4. 在下方"当前进度"清单勾选 Tn,直接进入下一个任务。
+
+不一口气连做多个任务(一次一个,做完收尾再进下一个),但**不需要等独立评审**——
+自验 DoD 通过即可推进。若某个任务我(maintainer)想要第二双眼睛,会另行单独发起,不阻塞你。
+
+详细流程见 `docs/workflow.md`。
 
 ## 三条红线(违反即返工,不可协商)
 
@@ -36,7 +45,9 @@ PASS 后再做下一个任务。不要一口气把多个任务做完。
 - **错误可读**:所有面向用户的错误是人类可读消息,不是 Rust panic backtrace。
 - **质量门**:提交前 `cargo build`、`cargo test`、`cargo clippy` 应通过(clippy 无 error)。
 - **任务即提交**:每个任务完成后,generator 必须先 commit(再写/更新 status),
-  commit message 形如 `T0: project scaffold`。一个任务对应一个独立 commit,
+  commit message 形如 `T0: project scaffold`。
+- **Commit 语言**:所有 commit message 一律用英文,遵循 `<type/Tn>: <summary>` 形式
+  (如 `T2: implement provider catalog merge`、`docs: simplify workflow`)。一个任务对应一个独立 commit,
   作为该任务的评审快照。未 commit 不算任务完成。
 
 ## 关键文件导航
