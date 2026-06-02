@@ -8,7 +8,7 @@
 use std::process::Command;
 
 use anyhow::{anyhow, Context, Result};
-use zeroize::Zeroizing;
+use zeroize::{Zeroize, Zeroizing};
 
 use super::{Secret, SecretStore};
 use crate::cred_ref::CredRef;
@@ -69,6 +69,25 @@ fn actionable(failure: &BwFailure) -> anyhow::Error {
 }
 
 /// 执行 `bw get password <value>`。成功 → Ok(Some(secret));NotFound → Ok(None);
+/// 把子进程 stdout 字节转成受控 [`Secret`]:**move** 进 String(复用同一缓冲、零拷贝),
+/// 就地去掉尾部换行。明文的**首个落点**即由 `Zeroizing` 托管,不在裸 `Vec` / 中间 `String`
+/// 留残影(对照 keychain.rs::get 的 `Zeroizing::new(pw)`)。非 UTF-8 则擦除回收字节后报错。
+fn finish_password(stdout: Vec<u8>) -> Result<Secret> {
+    let mut key = match String::from_utf8(stdout) {
+        Ok(s) => Zeroizing::new(s),
+        Err(e) => {
+            // 把回收到的首个落点字节立即擦除,错误消息不含明文。
+            let mut bytes = e.into_bytes();
+            bytes.zeroize();
+            return Err(anyhow!("bw 返回的内容不是合法 UTF-8"));
+        }
+    };
+    // truncate 就地缩短,不产生新的明文拷贝;被切掉的只可能是换行符,非 key 字节。
+    let end = key.trim_end_matches(['\n', '\r']).len();
+    key.truncate(end);
+    Ok(key)
+}
+
 /// 其它失败 → Err(可操作消息)。把 NotFound 与硬错误分开,便于 exists 复用。
 fn run_get(value: &str) -> Result<Option<Secret>> {
     let output = Command::new("bw")
@@ -79,10 +98,8 @@ fn run_get(value: &str) -> Result<Option<Secret>> {
         .context("无法执行 `bw`:请确认已安装 Bitwarden CLI 且在 PATH 中")?;
 
     if output.status.success() {
-        // key 只在 stdout;立刻包进 Zeroizing,去掉尾部换行。
-        let raw = Zeroizing::new(String::from_utf8_lossy(&output.stdout).into_owned());
-        let trimmed = Zeroizing::new(raw.trim_end_matches(['\n', '\r']).to_string());
-        return Ok(Some(trimmed));
+        // key 只在 stdout。直接把该缓冲 move 进受控 Secret(零拷贝),首个落点即清零。
+        return Ok(Some(finish_password(output.stdout)?));
     }
 
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -127,6 +144,14 @@ mod tests {
         assert!(query_value("openrouter").is_err()); // 无 '/'
         assert!(query_value("vault/x").is_err()); // 未知类型
         assert!(query_value("item/").is_err()); // 空值
+    }
+
+    #[test]
+    fn finish_password_moves_trims_and_wraps() {
+        // 占位串,非真实 key。验证零拷贝 move + 尾换行去除。
+        assert_eq!(&*finish_password(b"sk-abc123\n".to_vec()).unwrap(), "sk-abc123");
+        assert_eq!(&*finish_password(b"sk-xyz\r\n".to_vec()).unwrap(), "sk-xyz");
+        assert_eq!(&*finish_password(b"no-newline".to_vec()).unwrap(), "no-newline");
     }
 
     #[test]
