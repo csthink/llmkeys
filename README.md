@@ -203,6 +203,47 @@ qiao env openrouter   # qiao 会调用 bw get 取 key
 > Bitwarden 一律走 **`bw`(Password Manager CLI)**,可连自托管 Vaultwarden;
 > **不用 `bws`(Secrets Manager)**——它非开源、Vaultwarden 不支持。
 
+### 验证 bw 后端(端到端自测)
+
+完整跑一遍"从 Vaultwarden 取 key"(自测可用占位串当 key):
+
+1. 在 Bitwarden 建一个 **Login** 类型条目(类型必须是 Login——qiao 调 `bw get password`,只有 Login 有密码字段):
+   - 名称如 `deepseek`,**password 字段**填 key(自测可填 `test`),其余字段留空。
+2. 同步,并确认 `bw` 自己取得到(先排除 qiao 之外的问题):
+
+   ```sh
+   bw sync
+   bw get password "deepseek"      # 应原样打印你填的 key
+   ```
+3. 把该 provider 的 `key_ref` 指到 bw(`~/.config/qiao/providers.toml`):
+
+   ```toml
+   [providers.deepseek]
+   key_ref = "bw:item/deepseek"    # locator 只支持 item/<名> 或 id/<id>;别的前缀会报错
+   ```
+4. 端到端取 key 并渲染:
+
+   ```sh
+   qiao show deepseek    # key_ref 应显示 bw:item/deepseek(引用,不显示明文)
+   qiao env deepseek
+   # DEEPSEEK_API_KEY=test
+   # DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
+   # DEEPSEEK_MODEL=deepseek-v4-pro
+   ```
+
+失败路径也应给可操作提示(均为人类可读消息,无 panic):
+
+| 场景 | 触发方式 | qiao 提示 |
+|---|---|---|
+| 已锁定 | `unset BW_SESSION` 后取 key | `Bitwarden 已锁定:请先 bw unlock …` |
+| 未登录 | `bw logout` 后取 key | `未登录 Bitwarden:请先 bw login …` |
+| 条目不存在 | `key_ref` 指向不存在的名字 | `Bitwarden 中未找到对应条目` |
+| locator 写错 | 如 `bw:llm/deepseek` | `未知的 bw 定位类型 llm:只支持 item / id` |
+
+> - 用 **id 更稳**:`bw list items --search deepseek` 取 `"id"`,写成 `key_ref = "bw:id/<id>"`,改名也不受影响。
+> - `qiao key set/check` 只管 **keychain**,不验 bw;bw 的取值用 `qiao env`/`code` 验。
+> - 自测完删掉占位条目与 `providers.toml` 里的测试覆盖即可还原。
+
 ## License
 
 [MIT](./LICENSE) © 2026 mars
