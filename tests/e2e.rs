@@ -83,6 +83,32 @@ fn code_command_renders_langchain_from_env_backend() {
 }
 
 #[test]
+fn env_copy_prints_snippet_and_reports_copied() {
+    // 走通 --copy/arboard 路径:片段仍在 stdout,状态提示在 stderr;exit 0(剪贴板失败也优雅降级)。
+    let home = temp_home("copy");
+    write_env_override(&home);
+
+    let out = run(&home, &["env", "openrouter", "--copy"], Some("placeholder-not-real"));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    // 片段仍写 stdout(剪贴板在无头环境难断言,故只验输出 + 提示)。
+    assert!(stdout.contains("OPENROUTER_BASE_URL=https://openrouter.ai/api/v1"));
+    assert!(stdout.contains("OPENROUTER_API_KEY=placeholder-not-real"));
+    // SHOULD「已复制」提示;无头环境复制失败则给降级提示——两者都证明 --copy 路径被执行。
+    assert!(
+        stderr.contains("已复制到剪贴板") || stderr.contains("复制到剪贴板失败"),
+        "stderr 应含复制结果提示,实际: {stderr}"
+    );
+
+    fs::remove_dir_all(&home).ok();
+}
+
+#[test]
 fn list_works_offline_from_snapshot() {
     // 空临时 home:无 overrides、无 models.dev 缓存 → 全走内置快照。
     let home = temp_home("list");

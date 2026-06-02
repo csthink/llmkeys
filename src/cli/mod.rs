@@ -68,16 +68,16 @@ pub(crate) fn parse_key_target(target: &str) -> Result<(String, Option<String>)>
     }
 }
 
-/// 交付渲染结果:`--copy` 送剪贴板(只提示,不回显 key),否则打印到 stdout。
+/// 交付渲染结果:片段始终写 **stdout**(数据);`--copy` 时**额外**送剪贴板,
+/// 状态提示走 **stderr**(spec S4 的 SHOULD「已复制」)。剪贴板不可用时优雅降级为提示,
+/// 不让 `--copy` 失败(片段已在 stdout,用户仍可用)。
 pub(crate) fn deliver(snippet: &Secret, copy: bool) -> Result<()> {
+    print!("{}", snippet.as_str());
     if copy {
-        let mut clipboard = arboard::Clipboard::new().context("无法访问系统剪贴板")?;
-        clipboard
-            .set_text(snippet.as_str())
-            .context("写入剪贴板失败")?;
-        println!("已复制到剪贴板。");
-    } else {
-        print!("{}", snippet.as_str());
+        match arboard::Clipboard::new().and_then(|mut c| c.set_text(snippet.as_str())) {
+            Ok(()) => eprintln!("已复制到剪贴板。"),
+            Err(e) => eprintln!("提示:复制到剪贴板失败({e});片段已打印到上方 stdout。"),
+        }
     }
     Ok(())
 }
