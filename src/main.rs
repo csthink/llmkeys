@@ -7,9 +7,13 @@
 
 use clap::{Parser, Subcommand};
 
-// T1 提供凭证引用解析(spec S1);命令体由 T6 接线,故此处暂 allow(dead_code)。
+// T1–T2 提供解析/数据模型/路径;命令体由 T6 接线,故此处暂 allow(dead_code)。
+#[allow(dead_code)]
+mod config;
 #[allow(dead_code)]
 mod cred_ref;
+#[allow(dead_code)]
+mod model;
 
 /// qiao —— 本地 LLM provider 与密钥管家。
 #[derive(Parser)]
