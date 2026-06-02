@@ -7,7 +7,7 @@
 **站在巨人肩上,不重复造轮子**:provider/模型目录复用 [models.dev](https://models.dev),
 密钥存储复用操作系统 keychain 与你已有的 Bitwarden/Vaultwarden,qiao 只写很薄的整合层。
 
-> ⚠️ **当前状态:设计完成,实现进行中。** 本 README 为初始版;安装与用法部分将在实现完成(tasks T7)后回填。
+> ✅ **当前状态:v1 已实现(macOS)。** 安装与用法见下方[安装与用法](#安装与用法)。
 
 ---
 
@@ -83,8 +83,106 @@ provider 内置快照:[`snapshot/providers.snapshot.toml`](./snapshot/providers.
 
 ## 安装与用法
 
-> 🚧 待实现完成(tasks T7)后回填:`cargo install` / Homebrew 安装、`qiao` 各子命令示例、
-> `bw` 连 Vaultwarden 的前置配置。
+### 前置
+
+- **macOS**(v1 仅支持 macOS)与 **Rust 工具链**(`rustup`,stable)。
+- 可选:[Bitwarden CLI `bw`](https://bitwarden.com/help/cli/)(仅当你用 `bw` 后端取 key 时)。
+
+### 安装
+
+从源码安装(单二进制,装到 `~/.cargo/bin/qiao`):
+
+```sh
+git clone https://github.com/csthink/qiao.git
+cd qiao
+cargo install --path .
+```
+
+或仅构建本地二进制:`cargo build --release`(产物在 `target/release/qiao`)。
+
+### 60 秒上手
+
+```sh
+# 1. 看有哪些 provider(合并:内置快照 + models.dev 缓存 + 你的覆盖)
+qiao list
+
+# 2. 看某家的完整配置(key 只显示为引用,绝不显示明文)
+qiao show openrouter
+
+# 3. 存入 API key —— 交互式粘贴,写进 macOS keychain
+#    （不经命令行参数、不进 shell history;输入不回显）
+qiao key set openrouter
+
+# 4. 校验存没存上(只回 yes/no)
+qiao key check openrouter
+
+# 5. 取出配置,拼成可直接用的 .env 片段(key 从 keychain 取)
+qiao env openrouter
+#   或送到剪贴板:
+qiao env openrouter --copy
+
+# 6. 同样地,拼成 LangChain 代码片段
+qiao code openrouter
+```
+
+多账号用 `#profile`:`qiao key set openrouter#work`、`qiao env openrouter --profile work`。
+
+刷新 provider 目录(从 models.dev 拉取,失败自动保留旧缓存):`qiao refresh`。
+
+### 命令一览
+
+| 命令 | 作用 |
+|---|---|
+| `qiao list` | 列出合并后的所有 provider(名 + base_url) |
+| `qiao show <id>` | 展示某 provider 配置(key 为引用形式,不显示明文) |
+| `qiao key set <id[#profile]>` | 交互式粘贴 key,写入 keychain |
+| `qiao key check <id[#profile]>` | 校验 keychain 里有没有该 key(yes/no) |
+| `qiao env <id> [--profile p] [--copy]` | 输出 `.env` 片段 |
+| `qiao code <id> [--profile p] [--copy]` | 输出 LangChain(`ChatOpenAI`)片段 |
+| `qiao refresh` | 重新拉取 models.dev 缓存(失败保留旧缓存) |
+
+### 自定义 / 补全 provider(本地覆盖)
+
+配置三层合并(低 → 高):**内置快照 < models.dev 缓存 < 你的覆盖**,**字段级合并、你写的永远赢**。
+在 `~/.config/qiao/providers.toml` 写覆盖即可(只存非机密配置,**绝不写 key**):
+
+```toml
+# 改某家的 base_url(如走自建代理),其余字段仍用快照
+[providers.openrouter]
+base_url = "https://my-proxy.local/v1"
+
+# 新增一家 provider
+[providers.mycorp]
+display_name = "MyCorp"
+base_url     = "https://api.mycorp.com/v1"
+key_ref      = "keychain:mycorp"
+env_prefix   = "MYCORP"
+  [providers.mycorp.models]
+  chat = "mycorp-large"
+```
+
+> 国内 provider(SiliconFlow / 阿里云百炼)以**快照 / 你的覆盖**为准,不等上游 models.dev 收录。
+
+### 用 Bitwarden / Vaultwarden 取 key
+
+把某家的 `key_ref` 指到 `bw` 后端(在覆盖文件里),key 仍存在你的 Bitwarden vault:
+
+```toml
+[providers.openrouter]
+key_ref = "bw:item/OpenRouter API Key"   # 按条目名;或 bw:id/<条目 id>(更稳)
+```
+
+前置:先登录并解锁 CLI——
+
+```sh
+bw config server https://your-vaultwarden.example.com   # 自托管 Vaultwarden
+bw login
+export BW_SESSION="$(bw unlock --raw)"
+qiao env openrouter   # qiao 会调用 bw get 取 key
+```
+
+> Bitwarden 一律走 **`bw`(Password Manager CLI)**,可连自托管 Vaultwarden;
+> **不用 `bws`(Secrets Manager)**——它非开源、Vaultwarden 不支持。
 
 ## License
 
