@@ -99,7 +99,12 @@ provider 内置快照:[`snapshot/providers.snapshot.toml`](./snapshot/providers.
   > 已装过但仍报 `cargo: command not found`,多半是终端在安装前就开着了——
   > `source "$HOME/.cargo/env"` 或新开一个终端窗口即可。
 
-- 可选:[Bitwarden CLI `bw`](https://bitwarden.com/help/cli/)(仅当你用 `bw` 后端取 key 时)。
+- 可选:[Bitwarden CLI `bw`](https://bitwarden.com/help/cli/)(仅当你用 `bw` 后端取 key 时)。安装:
+
+  ```sh
+  brew install bitwarden-cli      # 推荐;或 npm install -g @bitwarden/cli
+  bw --version                    # 验证(注意是 bw,不是 bws)
+  ```
 
 ### 安装
 
@@ -185,10 +190,11 @@ env_prefix   = "MYCORP"
 key_ref = "bw:item/OpenRouter API Key"   # 按条目名;或 bw:id/<条目 id>(更稳)
 ```
 
-前置:先登录并解锁 CLI——
+前置:先安装 `bw`、再登录并解锁 CLI——
 
 ```sh
-bw config server https://your-vaultwarden.example.com   # 自托管 Vaultwarden
+brew install bitwarden-cli                              # 安装 bw(或 npm install -g @bitwarden/cli)
+bw config server https://your-vaultwarden.example.com   # 自托管 Vaultwarden(官方云可跳过)
 bw login
 export BW_SESSION="$(bw unlock --raw)"
 qiao env openrouter   # qiao 会调用 bw get 取 key
