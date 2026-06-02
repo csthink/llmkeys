@@ -159,6 +159,20 @@ qiao code openrouter
 | `qiao code <id> [--profile p] [--copy]` | 输出 LangChain(`ChatOpenAI`)片段 |
 | `qiao refresh` | 重新拉取 models.dev 缓存(失败保留旧缓存) |
 
+> **查 keychain 里 qiao 存了哪些 key**:`qiao key check <id>` 只能逐个问;要列全部条目,
+> 用 `security` 按 service 过滤(只读元数据,不取明文、不弹密码框):
+>
+> ```sh
+> # 列出 service=dev.mars.qiao 的所有 account(即 <provider>[#profile])
+> security dump-keychain 2>/dev/null | awk '
+>   /"acct"<blob>=/ { a=$0; sub(/.*"acct"<blob>="/,"",a); sub(/".*/,"",a); acct=a }
+>   /"svce"<blob>=/ { s=$0; sub(/.*"svce"<blob>="/,"",s); sub(/".*/,"",s);
+>                     if (s=="dev.mars.qiao") print acct }'
+>
+> # 或只确认单个是否存在(退出码 0=存在,非 0=没有)
+> security find-generic-password -s "dev.mars.qiao" -a "openrouter" >/dev/null 2>&1 && echo yes || echo no
+> ```
+>
 > **删除 keychain 里的 key**:qiao 没有删除子命令,用系统自带的 `security`(条目固定
 > `service = "dev.mars.qiao"`,`account = "<provider>[#profile]"`):
 >
