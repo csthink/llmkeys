@@ -1,24 +1,18 @@
 //! qiao CLI 入口。
 //!
-//! T0 只搭骨架:用 clap derive 注册全部子命令(对应 spec S4),命令体先 `todo!()`,
-//! 由 T1–T6 逐步接线。`--help` / `--version` 由 clap 在分发前处理,故空壳也能列出全部子命令。
+//! clap derive 注册全部子命令(对应 spec S4),T6 把命令体接到 `cli` 模块的数据流(design D3)。
+//! `--help` / `--version` 由 clap 在分发前处理。错误统一在 `main` 以人类可读形式打印(无 panic backtrace)。
 //!
 //! 范围提醒(docs/proposal、CLAUDE.md 红线):v1 不注册 `run --`(D7 预留)、不碰 Linux/Vault/GUI。
 
 use clap::{Parser, Subcommand};
 
-// T1–T3 提供解析/数据模型/路径/目录合并;命令体由 T6 接线,故此处暂 allow(dead_code)。
-#[allow(dead_code)]
 mod catalog;
-#[allow(dead_code)]
+mod cli;
 mod config;
-#[allow(dead_code)]
 mod cred_ref;
-#[allow(dead_code)]
 mod model;
-#[allow(dead_code, unused_imports)]
 mod render;
-#[allow(dead_code)]
 mod secret;
 
 /// qiao —— 本地 LLM provider 与密钥管家。
@@ -90,18 +84,24 @@ enum KeyAction {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    if let Err(e) = run() {
+        // 人类可读错误链(`{:#}` 展开 cause,不打印 Debug backtrace);Err 永不含明文 key。
+        eprintln!("错误:{e:#}");
+        std::process::exit(1);
+    }
+}
 
-    // T0 空壳:各命令体留待 T6 接线。clap 已在 parse() 阶段处理 --help/--version。
+fn run() -> anyhow::Result<()> {
+    let cli = Cli::parse();
     match cli.command {
-        Command::List => todo!("T6: cli::list"),
-        Command::Show { .. } => todo!("T6: cli::show"),
-        Command::Env { .. } => todo!("T6: cli::env"),
-        Command::Code { .. } => todo!("T6: cli::code"),
+        Command::List => cli::list::run(),
+        Command::Show { id } => cli::show::run(id),
+        Command::Env { id, profile, copy } => cli::env::run(id, profile, copy),
+        Command::Code { id, profile, copy } => cli::code::run(id, profile, copy),
         Command::Key { action } => match action {
-            KeyAction::Set { .. } => todo!("T6: cli::key set"),
-            KeyAction::Check { .. } => todo!("T6: cli::key check"),
+            KeyAction::Set { target } => cli::key::set(target),
+            KeyAction::Check { target } => cli::key::check(target),
         },
-        Command::Refresh => todo!("T6: cli::refresh"),
+        Command::Refresh => cli::refresh::run(),
     }
 }
