@@ -1,0 +1,56 @@
+name: release
+
+# 打 tag(vX.Y.Z)时触发:构建 macOS arm64 + x86_64 单二进制,
+# 打包 tar.gz + sha256,创建/追加到对应的 GitHub Release。
+# Homebrew tap 公式从这里产出的 tar.gz 下载并校验 sha256。
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write   # 创建 Release、上传产物需要
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    runs-on: macos-latest   # Apple Silicon runner;x86_64 走交叉编译
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (stable) + target
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add ${{ matrix.target }}
+
+      - name: Build release binary
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Package tar.gz + sha256
+        id: package
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          name="llmkeys-${version}-${{ matrix.target }}"
+          staging="$(mktemp -d)/${name}"
+          mkdir -p "$staging"
+          cp "target/${{ matrix.target }}/release/llmkeys" "$staging/"
+          cp README.md LICENSE "$staging/"
+          tar -czf "${name}.tar.gz" -C "$(dirname "$staging")" "${name}"
+          shasum -a 256 "${name}.tar.gz" > "${name}.tar.gz.sha256"
+          echo "asset=${name}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - name: Attach to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # 同一 tag 下多个 job 各自追加自己的产物到同一个 Release
+          files: |
+            ${{ steps.package.outputs.asset }}
+            ${{ steps.package.outputs.asset }}.sha256
+          fail_on_unmatched_files: true
