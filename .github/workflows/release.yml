@@ -49,6 +49,7 @@ jobs:
       - name: Attach to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ contains(github.ref_name, '-') }}   # rc/beta tag(含 -)自动归为预发布,不抢 Latest
           # 同一 tag 下多个 job 各自追加自己的产物到同一个 Release
           files: |
             ${{ steps.package.outputs.asset }}
