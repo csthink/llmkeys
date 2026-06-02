@@ -85,7 +85,20 @@ provider 内置快照:[`snapshot/providers.snapshot.toml`](./snapshot/providers.
 
 ### 前置
 
-- **macOS**(v1 仅支持 macOS)与 **Rust 工具链**(`rustup`,stable)。
+- **macOS**(v1 仅支持 macOS)。
+- **Rust 工具链**(`rustup`,stable)。没装过的话:
+
+  ```sh
+  # 官方一键安装 rustup(含 cargo)
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  # 让当前终端立刻生效(否则会报 `cargo: command not found`);新开终端则自动生效
+  source "$HOME/.cargo/env"
+  cargo --version   # 验证:应打印 cargo 版本
+  ```
+
+  > 已装过但仍报 `cargo: command not found`,多半是终端在安装前就开着了——
+  > `source "$HOME/.cargo/env"` 或新开一个终端窗口即可。
+
 - 可选:[Bitwarden CLI `bw`](https://bitwarden.com/help/cli/)(仅当你用 `bw` 后端取 key 时)。
 
 ### 安装
