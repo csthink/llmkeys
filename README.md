@@ -49,7 +49,7 @@ env:OPENROUTER_API_KEY         # 环境变量兜底
 
 ## 设计文档
 
-完整规格在 [`docs/`](./docs/),按 OpenSpec 四文档结构组织:
+完整规格在 [`docs/`](./docs/):
 
 | 文档 | 内容 |
 |---|---|
@@ -57,19 +57,19 @@ env:OPENROUTER_API_KEY         # 环境变量兜底
 | [spec.md](./docs/spec.md) | 可测试的行为契约(命令、引用语法、schema、输出格式) |
 | [design.md](./docs/design.md) | Rust 架构、crate 结构、SecretStore trait |
 | [tasks.md](./docs/tasks.md) | T0–T7 实现任务拆解(单文件单 owner) |
-| [workflow.md](./docs/workflow.md) | 接力协议:generator/evaluator 分工与验收门 |
+| [workflow.md](./docs/workflow.md) | 极简开发流程:节奏、三条红线、按需评审 |
 
 provider 内置快照:[`snapshot/providers.snapshot.toml`](./snapshot/providers.snapshot.toml)(运行时资源)。
 
-## 开发方式:Planner / Generator / Evaluator 接力
+## 开发方式
 
-本项目用多角色接力开发,文档是唯一事实来源:
+单人、小体量的自用工具,开发流程刻意保持轻:用一个 Claude Code 会话按 `docs/tasks.md`
+顺序实现 T0–T7,每个任务自测、对照 DoD 自验、`git commit`(英文 message)后进入下一个。
+设计文档是唯一事实来源,代码服从文档。只有在某个任务需要"第二双眼睛"时,才另开一个
+独立 Claude 会话做按需评审——不搞强制评审、review 回路或自动编排(对这个规模是过度设计)。
 
-- **Generator**(Claude Code)按 `tasks.md` 顺序写代码,每完成一任务写 `.relay/Tn.status.md`。
-- **Evaluator**(独立 Claude 会话)对照规格评审,产出 `.relay/Tn.review.md`,PASS 才放行下一任务。
-- **Planner / 仲裁**(维护者)传递 status/review、拍板范围变更、做最终放行。
-
-详见 [workflow.md](./docs/workflow.md)。
+约束以三条红线为底线(范围 / 安全 / bws),写在根目录 `CLAUDE.md`,Claude Code 每个会话自动读取。
+完整流程见 [workflow.md](./docs/workflow.md)。
 
 ## 技术栈与范围(v1)
 

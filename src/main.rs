@@ -7,7 +7,9 @@
 
 use clap::{Parser, Subcommand};
 
-// T1–T2 提供解析/数据模型/路径;命令体由 T6 接线,故此处暂 allow(dead_code)。
+// T1–T3 提供解析/数据模型/路径/目录合并;命令体由 T6 接线,故此处暂 allow(dead_code)。
+#[allow(dead_code)]
+mod catalog;
 #[allow(dead_code)]
 mod config;
 #[allow(dead_code)]

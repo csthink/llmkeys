@@ -14,6 +14,7 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"   # 读写 models.dev JSON 缓存(~/.cache/qiao/modelsdev.json);随 reqwest json 特性已在依赖树中
 toml = "0.8"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
 keyring = "3"
