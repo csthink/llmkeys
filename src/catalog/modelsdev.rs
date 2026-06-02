@@ -5,11 +5,12 @@
 //! **降级(S6)**:拉取失败 → 保留旧缓存(`refresh` 在成功拉取前绝不动缓存);缓存缺失/损坏 →
 //! 空层(合并时退回快照,`list` 仍可用)。任何路径都**不**把 key 写进日志(本层不接触 key)。
 //!
-//! **v1 贡献范围(裁断,见模块外 status / 变更提案)**:models.dev 的 `api` 字段对国内 provider
-//! 是国际端点(siliconflow `.com`、deepseek 缺 `/v1`),若覆盖快照会破坏国内配置,违反
-//! CLAUDE.md「国内 provider 以快照为准」。故本层 v1 **只规范化 `display_name`**,不贡献
-//! base_url / 模型选择;且合并入口只用它 enrich 已知 provider(见 `super::load_merged`)。
-//! 完整目录(模型列表)需 schema 扩展,留作变更提案。
+//! **v1 贡献范围(PROPOSAL-001,已采纳 A)**:models.dev 的 `api` 字段对国内 provider 是国际端点
+//! (siliconflow `.com`、deepseek 缺 `/v1`),若覆盖快照会破坏国内配置,违反 CLAUDE.md「国内
+//! provider 以快照为准」。裁断:CLAUDE.md(项目宪法)优先于 spec S3 的通用合并序——故本层 v1
+//! **只规范化 `display_name`,不贡献 base_url / 模型选择**,在 v1 **不发挥目录作用**;且合并入口
+//! 只用它 enrich 已知 provider(见 `super::load_merged`)。base_url / 模型目录的字段贡献待 schema
+//! 成长后再放开(见 `docs/proposals/PROPOSAL-001-modelsdev-scope.md`、spec S3 脚注、design D4)。
 
 use std::collections::BTreeMap;
 use std::fs;
