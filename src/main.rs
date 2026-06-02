@@ -16,6 +16,8 @@ mod config;
 mod cred_ref;
 #[allow(dead_code)]
 mod model;
+#[allow(dead_code)]
+mod secret;
 
 /// qiao —— 本地 LLM provider 与密钥管家。
 #[derive(Parser)]
