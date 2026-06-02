@@ -1,0 +1,5 @@
+# 固定工具链通道,保证 generator/evaluator/CI 用一致的 Rust 版本。
+# v1 仅 macOS;edition 2021 见 Cargo.toml。
+[toolchain]
+channel = "stable"
+components = ["clippy", "rustfmt"]

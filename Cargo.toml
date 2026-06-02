@@ -1,0 +1,24 @@
+[package]
+name = "qiao"
+version = "0.1.0"
+edition = "2021"
+description = "本地 LLM provider / 密钥 管家:配置只存引用,key 走 keychain/bw/env,产出 .env 与 LangChain 片段"
+license = "MIT"
+
+[[bin]]
+name = "qiao"
+path = "src/main.rs"
+
+# 依赖按 docs/design.md D1 钉主版本。v1 全同步,不引入 async。
+# bw 后端走 std::process::Command,不额外引入 crate。
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
+keyring = "3"
+arboard = "3"
+directories = "5"
+anyhow = "1"
+thiserror = "2"
+zeroize = "1"
