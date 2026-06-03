@@ -55,30 +55,31 @@ env:OPENROUTER_API_KEY         # 环境变量兜底
 
 ## 安装
 
-### 前置
+仅 macOS(v1)。**推荐用 Homebrew**——预编译二进制,无需 Rust 工具链;brew 会自动去掉隔离属性,不触发 Gatekeeper。
 
-- **macOS**(v1 仅支持 macOS)。
-- **Rust 工具链**(`rustup`,stable)。没装过:
+### 推荐:Homebrew
 
-  ```sh
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # 官方一键装 rustup(含 cargo)
-  source "$HOME/.cargo/env"                                        # 让当前终端立刻生效
-  cargo --version                                                  # 验证:应打印版本号
-  ```
+```sh
+brew install csthink/tap/llmkeys
+llmkeys --version        # 验证
+```
 
-  > 装过仍报 `cargo: command not found`,多半是终端在安装前就开着了——
-  > `source "$HOME/.cargo/env"` 或新开终端即可。
+> 等价于 `brew tap csthink/tap && brew install llmkeys`;之后升级用 `brew upgrade llmkeys`。
 
-- **可选** [Bitwarden CLI `bw`](https://bitwarden.com/help/cli/)(仅当你用 `bw` 后端取 key 时):
+### 备选:从源码构建
 
-  ```sh
-  brew install bitwarden-cli      # 或 npm install -g @bitwarden/cli
-  bw --version                    # 验证(注意是 bw,不是 bws)
-  ```
+需要 **Rust 工具链**(`rustup`,stable)。没装过:
 
-### 安装 llmkeys
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # 官方一键装 rustup(含 cargo)
+source "$HOME/.cargo/env"                                        # 让当前终端立刻生效
+cargo --version                                                  # 验证:应打印版本号
+```
 
-从源码装成单二进制(落到 `~/.cargo/bin/llmkeys`):
+> 装过仍报 `cargo: command not found`,多半是终端在安装前就开着了——
+> `source "$HOME/.cargo/env"` 或新开终端即可。
+
+装成单二进制(落到 `~/.cargo/bin/llmkeys`):
 
 ```sh
 git clone https://github.com/csthink/llmkeys.git
@@ -88,6 +89,15 @@ llmkeys --help        # 验证
 ```
 
 > 只想本地构建不安装:`cargo build --release`,产物在 `target/release/llmkeys`。
+
+### 可选:Bitwarden CLI(仅当你用 `bw` 后端取 key 时)
+
+[Bitwarden CLI `bw`](https://bitwarden.com/help/cli/):
+
+```sh
+brew install bitwarden-cli      # 或 npm install -g @bitwarden/cli
+bw --version                    # 验证(注意是 bw,不是 bws)
+```
 
 ---
 
