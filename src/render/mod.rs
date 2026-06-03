@@ -18,5 +18,5 @@ use anyhow::{anyhow, Result};
 
 /// 取必填字段;缺失则报指明 provider + 字段名的错误(spec S3)。子模块经 `super::require` 复用。
 fn require<'a>(field: Option<&'a str>, id: &str, name: &str) -> Result<&'a str> {
-    field.ok_or_else(|| anyhow!("provider {id} 缺少必填字段 `{name}`,无法渲染"))
+    field.ok_or_else(|| anyhow!("provider {id} is missing the required field `{name}`, cannot render"))
 }

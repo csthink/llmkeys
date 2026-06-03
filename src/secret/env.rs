@@ -17,14 +17,14 @@ impl SecretStore for EnvStore {
         match std::env::var(name) {
             Ok(v) => Ok(Zeroizing::new(v)),
             // 只提变量名(非 key),不泄露明文。
-            Err(_) => Err(anyhow!("环境变量 {name} 未设置;请先 `export {name}=<key>`")),
+            Err(_) => Err(anyhow!("environment variable {name} is not set; run `export {name}=<key>` first")),
         }
     }
 
     fn set(&self, _r: &CredRef, _value: Secret) -> Result<()> {
         // 安全红线:不把 key 写进持久化 env。进程内 set_var 也无意义(子进程才可见且易泄露)。
         Err(anyhow!(
-            "env 后端是只读兜底,不支持写入;请改用 keychain(`llmkeys key set <id>`)或自行 `export`"
+            "the env backend is a read-only fallback and does not support writing; use keychain instead (`llmkeys key set <id>`) or `export` it yourself"
         ))
     }
 
@@ -69,6 +69,6 @@ mod tests {
         let err = EnvStore
             .set(&cred("WHATEVER"), Zeroizing::new("k".into()))
             .unwrap_err();
-        assert!(err.to_string().contains("只读"));
+        assert!(err.to_string().contains("read-only"));
     }
 }

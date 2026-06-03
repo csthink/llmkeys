@@ -12,7 +12,7 @@ const SNAPSHOT_TOML: &str = include_str!("../../snapshot/providers.snapshot.toml
 /// 解析内置快照层。理论上不会运行时失败(资源随二进制编译进来),
 /// 仍返回 `Result` 以统一接口;解析失败意味着构建期资源损坏。
 pub fn load() -> Result<ProvidersFile> {
-    toml::from_str(SNAPSHOT_TOML).context("内置快照解析失败(构建期资源损坏?)")
+    toml::from_str(SNAPSHOT_TOML).context("failed to parse the built-in snapshot (corrupt build resource?)")
 }
 
 #[cfg(test)]

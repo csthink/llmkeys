@@ -19,16 +19,16 @@ pub struct BwStore;
 fn query_value(locator: &str) -> Result<&str> {
     let (kind, value) = locator
         .split_once('/')
-        .ok_or_else(|| anyhow!("bw 引用的 locator 须形如 `item/<名>` 或 `id/<id>`"))?;
+        .ok_or_else(|| anyhow!("a bw reference locator must look like `item/<name>` or `id/<id>`"))?;
     match kind {
         "item" | "id" => {
             if value.is_empty() {
-                Err(anyhow!("bw locator 的 `{kind}/` 之后不能为空"))
+                Err(anyhow!("the bw locator must not be empty after `{kind}/`"))
             } else {
                 Ok(value)
             }
         }
-        other => Err(anyhow!("未知的 bw 定位类型 `{other}`:只支持 `item` / `id`")),
+        other => Err(anyhow!("Unknown bw locator type `{other}`: only `item` / `id` are supported")),
     }
 }
 
@@ -58,13 +58,13 @@ fn classify(stderr: &str) -> BwFailure {
 fn actionable(failure: &BwFailure) -> anyhow::Error {
     match failure {
         BwFailure::NotLoggedIn => anyhow!(
-            "未登录 Bitwarden:请先 `bw login`(自托管先 `bw config server <你的 Vaultwarden 地址>`)"
+            "Not logged in to Bitwarden: run `bw login` first (self-hosted: first `bw config server <your Vaultwarden URL>`)"
         ),
         BwFailure::Locked => {
-            anyhow!("Bitwarden 已锁定:请先 `bw unlock` 并 `export BW_SESSION=<返回的会话>`")
+            anyhow!("Bitwarden is locked: run `bw unlock` and `export BW_SESSION=<returned session>` first")
         }
-        BwFailure::NotFound => anyhow!("Bitwarden 中未找到对应条目"),
-        BwFailure::Other(msg) => anyhow!("bw 调用失败:{msg}"),
+        BwFailure::NotFound => anyhow!("No matching item found in Bitwarden"),
+        BwFailure::Other(msg) => anyhow!("bw call failed: {msg}"),
     }
 }
 
@@ -79,7 +79,7 @@ fn finish_password(stdout: Vec<u8>) -> Result<Secret> {
             // 把回收到的首个落点字节立即擦除,错误消息不含明文。
             let mut bytes = e.into_bytes();
             bytes.zeroize();
-            return Err(anyhow!("bw 返回的内容不是合法 UTF-8"));
+            return Err(anyhow!("bw returned content that is not valid UTF-8"));
         }
     };
     // truncate 就地缩短,不产生新的明文拷贝;被切掉的只可能是换行符,非 key 字节。
@@ -89,7 +89,7 @@ fn finish_password(stdout: Vec<u8>) -> Result<Secret> {
     // 宁可报错也不渲染 `*_API_KEY=`(空),以免下游静默用一个不存在的 key。
     if key.is_empty() {
         return Err(anyhow!(
-            "bw 返回了空密码:该条目可能没有 password 字段(API key 或存在自定义字段/备注里,v1 暂只读 password 字段)"
+            "bw returned an empty password: the item may have no password field (the API key may live in a custom field or note; v1 only reads the password field)"
         ));
     }
     Ok(key)
@@ -106,7 +106,7 @@ fn run_get(value: &str) -> Result<Option<Secret>> {
         .arg("password")
         .arg(value)
         .output()
-        .context("无法执行 `bw`:请确认已安装 Bitwarden CLI 且在 PATH 中")?;
+        .context("failed to execute `bw`: make sure the Bitwarden CLI is installed and on PATH")?;
 
     if output.status.success() {
         // key 只在 stdout。直接把该缓冲 move 进受控 Secret(零拷贝),首个落点即清零。
@@ -129,7 +129,7 @@ impl SecretStore for BwStore {
     fn set(&self, _r: &CredRef, _value: Secret) -> Result<()> {
         // v1 不在 bw 后端写入(design D3):避免把 key 经 argv/临时文件喂给 bw create。
         Err(anyhow!(
-            "v1 不支持通过 llmkeys 写入 Bitwarden;请在 Bitwarden 客户端手动创建该条目后,用 `bw:item/<名>` 引用"
+            "v1 does not support writing to Bitwarden through llmkeys; create the item manually in a Bitwarden client, then reference it with `bw:item/<name>`"
         ))
     }
 
@@ -170,7 +170,7 @@ mod tests {
         // success + 空(或仅换行)stdout 必须报错,绝不当成空 key 渲染出 `*_API_KEY=`。
         for raw in [b"".as_slice(), b"\n", b"\r\n"] {
             let err = finish_password(raw.to_vec()).unwrap_err().to_string();
-            assert!(err.contains("空密码"), "应报空密码错误,得到:{err}");
+            assert!(err.contains("empty password"), "应报空密码错误,得到:{err}");
         }
     }
 
@@ -200,6 +200,6 @@ mod tests {
             profile: None,
         };
         let err = BwStore.set(&r, Zeroizing::new("k".into())).unwrap_err();
-        assert!(err.to_string().contains("手动创建"));
+        assert!(err.to_string().contains("create the item manually"));
     }
 }

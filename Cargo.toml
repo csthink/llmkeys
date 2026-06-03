@@ -2,7 +2,7 @@
 name = "llmkeys"
 version = "0.1.0"
 edition = "2021"
-description = "本地 LLM provider / 密钥 管家:配置只存引用,key 走 keychain/bw/env,产出 .env 与 LangChain 片段"
+description = "Credential and config manager for LLM providers: config stores only references, keys via keychain/bw/env, outputs .env and LangChain snippets"
 license = "MIT"
 repository = "https://github.com/csthink/llmkeys"
 homepage = "https://github.com/csthink/llmkeys"

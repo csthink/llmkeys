@@ -19,9 +19,9 @@ pub fn load() -> Result<ProvidersFile> {
 fn load_from(path: &Path) -> Result<ProvidersFile> {
     match fs::read_to_string(path) {
         Ok(s) => toml::from_str(&s)
-            .with_context(|| format!("解析用户 overrides 失败: {}", path.display())),
+            .with_context(|| format!("failed to parse user overrides: {}", path.display())),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(ProvidersFile::default()),
-        Err(e) => Err(e).with_context(|| format!("读取用户 overrides 失败: {}", path.display())),
+        Err(e) => Err(e).with_context(|| format!("failed to read user overrides: {}", path.display())),
     }
 }
 

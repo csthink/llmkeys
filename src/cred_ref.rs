@@ -70,16 +70,16 @@ impl fmt::Display for CredRef {
 /// (输入是配置中的引用串,引用串永不含 key)。
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum CredRefError {
-    #[error("凭证引用缺少 ':' 分隔符:期望 `<backend>:<locator>[#profile]`,得到 `{0}`")]
+    #[error("credential reference is missing the ':' separator: expected `<backend>:<locator>[#profile]`, got `{0}`")]
     MissingColon(String),
 
-    #[error("未知的密钥后端 `{0}`:仅支持 keychain | bw | env")]
+    #[error("unknown key backend `{0}`: only keychain | bw | env are supported")]
     UnknownBackend(String),
 
-    #[error("凭证引用的 locator 为空:`<backend>:` 之后必须有内容")]
+    #[error("the credential reference locator is empty: there must be content after `<backend>:`")]
     EmptyLocator,
 
-    #[error("凭证引用的 profile 为空:`#` 之后必须有内容(若 locator 本身需含 '#',v1 暂不支持)")]
+    #[error("the credential reference profile is empty: there must be content after `#` (if the locator itself needs '#', v1 does not support that yet)")]
     EmptyProfile,
 }
 

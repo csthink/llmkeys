@@ -15,7 +15,7 @@ mod model;
 mod render;
 mod secret;
 
-/// llmkeys —— 本地 LLM provider 与密钥管家。
+/// llmkeys — a credential and config manager for LLM providers.
 #[derive(Parser)]
 #[command(name = "llmkeys", version, about, long_about = None)]
 struct Cli {
@@ -25,60 +25,60 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// 列出合并后的所有 provider(名 + base_url 摘要)。
+    /// List all merged providers (name + base_url summary).
     List,
 
-    /// 展示某 provider 完整配置(key 显示为引用,绝不显示明文)。
+    /// Show a provider's full config (key shown as a reference, never in plaintext).
     Show {
-        /// provider id,如 openrouter。
+        /// Provider id, e.g. openrouter.
         id: String,
     },
 
-    /// 输出 .env 片段(按 env_prefix 拼变量名)。
+    /// Output a .env snippet (var names built from env_prefix).
     Env {
-        /// provider id。
+        /// Provider id.
         id: String,
-        /// 指定 profile(多账号)。
+        /// Select a profile (multiple accounts).
         #[arg(long)]
         profile: Option<String>,
-        /// 把输出送到剪贴板。
+        /// Send the output to the clipboard.
         #[arg(long)]
         copy: bool,
     },
 
-    /// 输出 LangChain 代码片段(OpenAI 兼容)。
+    /// Output a LangChain code snippet (OpenAI-compatible).
     Code {
-        /// provider id。
+        /// Provider id.
         id: String,
-        /// 指定 profile(多账号)。
+        /// Select a profile (multiple accounts).
         #[arg(long)]
         profile: Option<String>,
-        /// 把输出送到剪贴板。
+        /// Send the output to the clipboard.
         #[arg(long)]
         copy: bool,
     },
 
-    /// 管理 keychain 中的密钥。
+    /// Manage keys in the keychain.
     Key {
         #[command(subcommand)]
         action: KeyAction,
     },
 
-    /// 重新拉取 models.dev 并更新缓存(失败时保留旧缓存)。
+    /// Re-fetch models.dev and update the cache (keeps the old cache on failure).
     Refresh,
 }
 
 #[derive(Subcommand)]
 enum KeyAction {
-    /// 交互式提示粘贴 key,写入 keychain(不经 argv/history)。
+    /// Interactively prompt to paste a key, write it into the keychain (not via argv/history).
     Set {
-        /// 目标 `<id[#profile]>`,如 openrouter 或 openrouter#work。
+        /// Target `<id[#profile]>`, e.g. openrouter or openrouter#work.
         target: String,
     },
 
-    /// 校验 key 能否取出,只回 yes/no(不打印 key)。
+    /// Check whether the key can be fetched, prints only yes/no (never the key).
     Check {
-        /// 目标 `<id[#profile]>`。
+        /// Target `<id[#profile]>`.
         target: String,
     },
 }
@@ -86,7 +86,7 @@ enum KeyAction {
 fn main() {
     if let Err(e) = run() {
         // 人类可读错误链(`{:#}` 展开 cause,不打印 Debug backtrace);Err 永不含明文 key。
-        eprintln!("错误:{e:#}");
+        eprintln!("Error: {e:#}");
         std::process::exit(1);
     }
 }

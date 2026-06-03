@@ -65,23 +65,23 @@ fn read_cache(path: &Path) -> Result<Option<Cache>> {
     match fs::read_to_string(path) {
         Ok(s) => {
             let c: Cache = serde_json::from_str(&s)
-                .with_context(|| format!("缓存解析失败: {}", path.display()))?;
+                .with_context(|| format!("failed to parse cache: {}", path.display()))?;
             Ok(Some(c))
         }
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
-        Err(e) => Err(e).with_context(|| format!("读取缓存失败: {}", path.display())),
+        Err(e) => Err(e).with_context(|| format!("failed to read cache: {}", path.display())),
     }
 }
 
 fn write_cache(path: &Path, cache: &Cache) -> Result<()> {
     if let Some(dir) = path.parent() {
-        fs::create_dir_all(dir).with_context(|| format!("创建缓存目录失败: {}", dir.display()))?;
+        fs::create_dir_all(dir).with_context(|| format!("failed to create cache directory: {}", dir.display()))?;
     }
-    let json = serde_json::to_string_pretty(cache).context("缓存序列化失败")?;
+    let json = serde_json::to_string_pretty(cache).context("failed to serialize cache")?;
     // 原子写:先写临时文件再 rename,避免拉取/写入中断留下半截缓存。
     let tmp = path.with_extension("json.tmp");
-    fs::write(&tmp, json).with_context(|| format!("写临时缓存失败: {}", tmp.display()))?;
-    fs::rename(&tmp, path).with_context(|| format!("替换缓存失败: {}", path.display()))?;
+    fs::write(&tmp, json).with_context(|| format!("failed to write temp cache: {}", tmp.display()))?;
+    fs::rename(&tmp, path).with_context(|| format!("failed to replace cache: {}", path.display()))?;
     Ok(())
 }
 
@@ -140,15 +140,15 @@ fn fetch() -> Result<ProvidersFile> {
     let client = reqwest::blocking::Client::builder()
         .timeout(FETCH_TIMEOUT)
         .build()
-        .context("构建 HTTP 客户端失败")?;
+        .context("failed to build HTTP client")?;
     let upstream: BTreeMap<String, Upstream> = client
         .get(MODELS_DEV_URL)
         .send()
-        .context("拉取 models.dev 失败(网络不可达?)")?
+        .context("failed to fetch models.dev (network unreachable?)")?
         .error_for_status()
-        .context("models.dev 返回错误状态")?
+        .context("models.dev returned an error status")?
         .json()
-        .context("解析 models.dev 响应失败")?;
+        .context("failed to parse the models.dev response")?;
     Ok(normalize(upstream))
 }
 

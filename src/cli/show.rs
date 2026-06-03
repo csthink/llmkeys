@@ -7,7 +7,7 @@ use anyhow::Result;
 fn field(label: &str, value: Option<&str>) {
     match value {
         Some(v) => println!("  {label:16}: {v}"),
-        None => println!("  {label:16}: (未设置)"),
+        None => println!("  {label:16}: (not set)"),
     }
 }
 
@@ -20,8 +20,8 @@ pub fn run(id: String) -> Result<()> {
     field("base_url", p.base_url.as_deref());
     // key_ref 原样打印(引用,不显示明文)。
     match p.key_ref.as_deref() {
-        Some(kr) => println!("  {:16}: {kr}   (引用,不显示明文)", "key_ref"),
-        None => println!("  {:16}: (未设置)", "key_ref"),
+        Some(kr) => println!("  {:16}: {kr}   (reference, plaintext not shown)", "key_ref"),
+        None => println!("  {:16}: (not set)", "key_ref"),
     }
     field("env_prefix", p.env_prefix.as_deref());
     field("naming_note", p.naming_note.as_deref());

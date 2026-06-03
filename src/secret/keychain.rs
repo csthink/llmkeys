@@ -24,7 +24,7 @@ fn account(r: &CredRef) -> String {
 fn entry(r: &CredRef) -> Result<keyring::Entry> {
     let account = account(r);
     keyring::Entry::new(SERVICE, &account)
-        .with_context(|| format!("无法打开 keychain 条目(account={account})"))
+        .with_context(|| format!("failed to open keychain entry (account={account})"))
 }
 
 impl SecretStore for KeychainStore {
@@ -33,10 +33,10 @@ impl SecretStore for KeychainStore {
         match entry(r)?.get_password() {
             Ok(pw) => Ok(Zeroizing::new(pw)),
             Err(keyring::Error::NoEntry) => Err(anyhow::anyhow!(
-                "keychain 中没有 {account} 的 key;请先运行 `llmkeys key set {account}`"
+                "no key for {account} in the keychain; run `llmkeys key set {account}` first"
             )),
             // 注意:keyring 错误不含明文 key,可安全透出。
-            Err(e) => Err(e).with_context(|| format!("读取 keychain 失败(account={account})")),
+            Err(e) => Err(e).with_context(|| format!("failed to read keychain (account={account})")),
         }
     }
 
@@ -44,7 +44,7 @@ impl SecretStore for KeychainStore {
         let account = account(r);
         entry(r)?
             .set_password(&value)
-            .with_context(|| format!("写入 keychain 失败(account={account})"))
+            .with_context(|| format!("failed to write keychain (account={account})"))
     }
 
     fn exists(&self, r: &CredRef) -> Result<bool> {
@@ -56,7 +56,7 @@ impl SecretStore for KeychainStore {
                 Ok(true)
             }
             Err(keyring::Error::NoEntry) => Ok(false),
-            Err(e) => Err(e).with_context(|| format!("查询 keychain 失败(account={account})")),
+            Err(e) => Err(e).with_context(|| format!("failed to query keychain (account={account})")),
         }
     }
 }

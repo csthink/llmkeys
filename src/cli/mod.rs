@@ -30,7 +30,7 @@ pub(crate) fn load_catalog() -> Result<ProvidersFile> {
 pub(crate) fn find_provider<'a>(cat: &'a ProvidersFile, id: &str) -> Result<&'a Provider> {
     cat.providers
         .get(id)
-        .ok_or_else(|| anyhow!("未找到 provider `{id}`;运行 `llmkeys list` 查看可用项"))
+        .ok_or_else(|| anyhow!("Provider not found: `{id}`; run `llmkeys list` to see available ones"))
 }
 
 /// 由 provider 的 key_ref 解析 CredRef;`--profile` 若给定则覆盖其 profile。
@@ -38,9 +38,9 @@ pub(crate) fn resolve_cred(p: &Provider, id: &str, profile: Option<&str>) -> Res
     let key_ref = p
         .key_ref
         .as_deref()
-        .ok_or_else(|| anyhow!("provider `{id}` 未配置 key_ref,无法取 key"))?;
+        .ok_or_else(|| anyhow!("provider `{id}` has no key_ref configured, cannot fetch the key"))?;
     let mut cred =
-        CredRef::from_str(key_ref).with_context(|| format!("provider `{id}` 的 key_ref 非法"))?;
+        CredRef::from_str(key_ref).with_context(|| format!("invalid key_ref for provider `{id}`"))?;
     if let Some(prof) = profile {
         cred.profile = Some(prof.to_string());
     }
@@ -52,16 +52,16 @@ pub(crate) fn parse_key_target(target: &str) -> Result<(String, Option<String>)>
     match target.split_once('#') {
         Some((id, profile)) => {
             if id.is_empty() {
-                bail!("目标缺少 provider id(形如 `openrouter` 或 `openrouter#work`)");
+                bail!("target is missing the provider id (e.g. `openrouter` or `openrouter#work`)");
             }
             if profile.is_empty() {
-                bail!("`#` 之后的 profile 不能为空");
+                bail!("the profile after `#` must not be empty");
             }
             Ok((id.to_string(), Some(profile.to_string())))
         }
         None => {
             if target.is_empty() {
-                bail!("目标不能为空(形如 `openrouter` 或 `openrouter#work`)");
+                bail!("target must not be empty (e.g. `openrouter` or `openrouter#work`)");
             }
             Ok((target.to_string(), None))
         }
@@ -75,8 +75,8 @@ pub(crate) fn deliver(snippet: &Secret, copy: bool) -> Result<()> {
     print!("{}", snippet.as_str());
     if copy {
         match arboard::Clipboard::new().and_then(|mut c| c.set_text(snippet.as_str())) {
-            Ok(()) => eprintln!("已复制到剪贴板。"),
-            Err(e) => eprintln!("提示:复制到剪贴板失败({e});片段已打印到上方 stdout。"),
+            Ok(()) => eprintln!("Copied to clipboard."),
+            Err(e) => eprintln!("Note: failed to copy to clipboard ({e}); the snippet was printed to stdout above."),
         }
     }
     Ok(())
@@ -85,13 +85,13 @@ pub(crate) fn deliver(snippet: &Secret, copy: bool) -> Result<()> {
 /// 把秒数转成粗略人类可读时长。
 pub(crate) fn humanize(secs: u64) -> String {
     if secs < 60 {
-        format!("{secs} 秒")
+        format!("{secs} seconds")
     } else if secs < 3600 {
-        format!("{} 分钟", secs / 60)
+        format!("{} minutes", secs / 60)
     } else if secs < 86_400 {
-        format!("{} 小时", secs / 3600)
+        format!("{} hours", secs / 3600)
     } else {
-        format!("{} 天", secs / 86_400)
+        format!("{} days", secs / 86_400)
     }
 }
 
@@ -100,14 +100,14 @@ pub(crate) fn data_source_line() -> String {
     use crate::catalog::modelsdev::{status, CacheStatus};
     match status() {
         CacheStatus::Missing => {
-            "数据来源:内置快照 + 用户 overrides(models.dev 无缓存,`llmkeys refresh` 可拉取)".to_string()
+            "Source: built-in snapshot + user overrides (no models.dev cache; run `llmkeys refresh` to fetch)".to_string()
         }
         CacheStatus::Fresh { age_secs } => format!(
-            "数据来源:内置快照 + models.dev 缓存({}前)+ 用户 overrides",
+            "Source: built-in snapshot + models.dev cache ({} ago) + user overrides",
             humanize(age_secs)
         ),
         CacheStatus::Stale { age_secs } => format!(
-            "数据来源:内置快照 + models.dev 缓存({}前,已过期,建议 `llmkeys refresh`)+ 用户 overrides",
+            "Source: built-in snapshot + models.dev cache ({} ago, stale; consider `llmkeys refresh`) + user overrides",
             humanize(age_secs)
         ),
     }

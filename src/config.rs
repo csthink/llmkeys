@@ -21,7 +21,7 @@ const APP_DIR: &str = "llmkeys";
 fn home_dir() -> Result<PathBuf> {
     directories::BaseDirs::new()
         .map(|b| b.home_dir().to_path_buf())
-        .context("无法定位用户主目录(HOME 未设置?)")
+        .context("failed to locate the user home directory (HOME not set?)")
 }
 
 /// 按 "XDG 值优先,否则 home/<fallback_sub>" 解析应用目录。

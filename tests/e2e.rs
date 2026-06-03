@@ -101,7 +101,7 @@ fn env_copy_prints_snippet_and_reports_copied() {
     assert!(stdout.contains("OPENROUTER_API_KEY=placeholder-not-real"));
     // SHOULD「已复制」提示;无头环境复制失败则给降级提示——两者都证明 --copy 路径被执行。
     assert!(
-        stderr.contains("已复制到剪贴板") || stderr.contains("复制到剪贴板失败"),
+        stderr.contains("Copied to clipboard") || stderr.contains("failed to copy to clipboard"),
         "stderr 应含复制结果提示,实际: {stderr}"
     );
 
@@ -160,7 +160,7 @@ fn unknown_provider_errors_readably() {
     let out = run(&home, &["env", "does-not-exist"], None);
     assert!(!out.status.success(), "未知 provider 应以非零退出");
     let stderr = String::from_utf8_lossy(&out.stderr);
-    assert!(stderr.contains("未找到 provider"));
+    assert!(stderr.contains("Provider not found"));
     // 人类可读消息,不是 panic backtrace。
     assert!(!stderr.contains("panicked"));
 

@@ -23,14 +23,14 @@ pub fn set(target: String) -> Result<()> {
     let cred = keychain_cred(&target)?;
 
     // 隐藏输入:key 不经 argv / shell history。读入即 Zeroizing 托管。
-    let prompt = format!("粘贴 {cred} 的 API key(输入不回显,回车确认): ");
+    let prompt = format!("Paste the API key for {cred} (input hidden, press Enter to confirm): ");
     let key = Zeroizing::new(rpassword::prompt_password(prompt)?);
     if key.trim().is_empty() {
-        bail!("未输入 key,已取消。");
+        bail!("No key entered, cancelled.");
     }
 
     secret::store_for(&cred).set(&cred, key)?;
-    println!("已写入:{cred}");
+    println!("Stored: {cred}");
     Ok(())
 }
 
