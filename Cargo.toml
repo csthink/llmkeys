@@ -1,6 +1,6 @@
 [package]
 name = "llmkeys"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Credential and config manager for LLM providers: config stores only references, keys via keychain/bw/env, outputs .env and LangChain snippets"
 license = "MIT"
